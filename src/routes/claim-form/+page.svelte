@@ -1,0 +1,3 @@
+<div>
+    Claim Form
+</div>

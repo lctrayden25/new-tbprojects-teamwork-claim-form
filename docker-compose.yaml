@@ -1,0 +1,14 @@
+services:
+  db:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongodb
+    ports:
+      - '27017:27017'
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: teamwork
+      MONGODB_INITDB_ROOT_PASSWORD: Teamwork@1234
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
