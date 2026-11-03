@@ -36,6 +36,7 @@
 					<th class="px-4 py-3 font-medium">Amount</th>
 					<th class="px-4 py-3 font-medium">Receipt</th>
 					<th class="px-4 py-3 font-medium">Status</th>
+					<th class="px-4 py-3 font-medium">Submitted By</th>
 					<th class="px-4 py-3 font-medium">Remarks</th>
 				</tr>
 			</thead>
@@ -56,6 +57,7 @@
 								{claim.status.charAt(0).toUpperCase() + claim.status.slice(1)}
 							</span>
 						</td>
+						<td class="px-4 py-3 text-subtle">{claim.submittedBy || '—'}</td>
 						<td class="px-4 py-3 text-subtle">{claim.remarks || '—'}</td>
 					</tr>
 				{:else}
