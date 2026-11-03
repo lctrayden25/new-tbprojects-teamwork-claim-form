@@ -5,7 +5,6 @@
 
 	const items: { href: RouteId; label: string }[] = [
 		{ href: '/(dashboard)/claim-list', label: 'Claim List' },
-		{ href: '/(dashboard)/claim-list/create', label: 'New claim' },
 		{ href: '/(dashboard)/admin', label: 'Admin' }
 	];
 
