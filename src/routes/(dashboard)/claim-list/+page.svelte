@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { ClaimStatus } from '#lib/constants.ts';
 	import type { PageProps } from './$types';
+	import { amountFormat, dateFormat } from '#lib';
 
 	let { data }: PageProps = $props();
 
@@ -10,20 +11,6 @@
 		[ClaimStatus.APPROVED]: 'bg-[#f0fdf4] text-[#166534]',
 		[ClaimStatus.REJECTED]: 'bg-[#fff7ed] text-[#c2410c]'
 	} as const;
-
-	const amountFormat = new Intl.NumberFormat('en-HK', {
-		style: 'currency',
-		currency: 'HKD'
-	});
-	const dateFormat = new Intl.DateTimeFormat('en-GB', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric'
-	});
-
-	function formatDate(value: string) {
-		return dateFormat.format(new Date(`${value}T00:00:00`));
-	}
 </script>
 
 <svelte:head>
@@ -57,8 +44,8 @@
 					<tr class="border-b border-canvas last:border-b-0">
 						<td class="px-4 py-3 font-medium whitespace-nowrap text-ink">{claim.id}</td>
 						<td class="px-4 py-3">{claim.expenseItem}</td>
-						<td class="px-4 py-3 whitespace-nowrap">{formatDate(claim.expenseDate)}</td>
-						<td class="px-4 py-3 whitespace-nowrap">{amountFormat.format(claim.totalAmount)}</td>
+						<td class="px-4 py-3 whitespace-nowrap">{dateFormat(claim.expenseDate)}</td>
+						<td class="px-4 py-3 whitespace-nowrap">{amountFormat(claim.totalAmount)}</td>
 						<td class="px-4 py-3 text-subtle">{claim.receiptName || '—'}</td>
 						<td class="px-4 py-3">
 							<span

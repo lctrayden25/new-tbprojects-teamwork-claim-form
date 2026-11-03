@@ -1,15 +1,52 @@
 <script lang="ts">
+	import { amountFormat } from '#lib';
+	import Modal from '#lib/components/Modal.svelte';
 	import type { PageProps } from './$types';
 
 	let { form }: PageProps = $props();
+	let formEl = $state<HTMLFormElement | null>(null);
 	let fileInput = $state<HTMLInputElement | null>(null);
 	let dragging = $state(false);
 	let receiptName = $state('');
 	let previewUrl = $state('');
 	let receiptError = $state('');
+	let confirmOpen = $state(false);
+	let confirmed = $state(false);
+	let submitting = $state(false);
+	let summary = $state({ expenseItem: '', expenseDate: '', totalAmount: '' });
 
 	const maxReceiptBytes = 1024 * 1024 * 1024;
 	const today = new Date().toISOString().slice(0, 10);
+
+	function onSubmit(event: SubmitEvent) {
+		if (confirmed) return;
+		event.preventDefault();
+		if (receiptError) return;
+
+		const currentForm = event.currentTarget as HTMLFormElement;
+		if (!currentForm.checkValidity()) {
+			currentForm.reportValidity();
+			return;
+		}
+
+		const data = new FormData(currentForm);
+		const totalAmount = String(data.get('totalAmount') ?? '');
+		const amount = Number(totalAmount);
+		summary = {
+			expenseItem: String(data.get('expenseItem') ?? ''),
+			expenseDate: String(data.get('expenseDate') ?? ''),
+			totalAmount: Number.isFinite(amount) ? amountFormat(amount) : totalAmount
+		};
+		confirmOpen = true;
+	}
+
+	function confirmCreate() {
+		submitting = true;
+		confirmed = true;
+		confirmOpen = false;
+		formEl?.requestSubmit();
+		confirmed = false;
+	}
 
 	function setReceipt(file: File | undefined) {
 		if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -56,7 +93,14 @@
 	<title>Expense Claim Form (A1)</title>
 </svelte:head>
 
-<form class="page" method="POST" enctype="multipart/form-data" action="?/create">
+<form
+	bind:this={formEl}
+	class="page"
+	method="POST"
+	enctype="multipart/form-data"
+	action="?/create"
+	onsubmit={onSubmit}
+>
 	<header>
 		<h1 class="page-title">Expense Claim Form (A1)</h1>
 	</header>
@@ -160,5 +204,25 @@
 		>
 	</label>
 
-	<button type="submit" class="btn btn-primary w-fit">Continue</button>
+	<button type="submit" class="btn btn-primary w-fit">Create claim</button>
+
+	<Modal bind:open={confirmOpen} title="Create this claim?">
+		<p>Check the details below. The claim is created after you confirm.</p>
+		<dl class="mt-4 grid grid-cols-[8rem_1fr] gap-y-2">
+			<dt class="text-muted">Expense item</dt>
+			<dd class="text-ink">{summary.expenseItem}</dd>
+			<dt class="text-muted">Expense Date</dt>
+			<dd class="text-ink">{summary.expenseDate}</dd>
+			<dt class="text-muted">Amount</dt>
+			<dd class="text-ink">{summary.totalAmount}</dd>
+		</dl>
+		{#snippet footer()}
+			<button type="button" class="btn btn-secondary" onclick={() => (confirmOpen = false)}>
+				Cancel
+			</button>
+			<button type="button" class="btn btn-primary" disabled={submitting} onclick={confirmCreate}>
+				Create claim
+			</button>
+		{/snippet}
+	</Modal>
 </form>
