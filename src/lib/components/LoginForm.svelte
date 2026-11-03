@@ -1,35 +1,45 @@
 <script lang="ts">
-	let email = $state('');
+	import type { LoginResponse } from '#lib/type/Auth.ts';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+
+	let username = $state('');
 	let password = $state('');
 	let showPassword = $state(false);
 
 	const handleLogin = async (event: SubmitEvent) => {
 		event.preventDefault();
-		const res = await fetch('/api/login', {
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			method: 'POST',
-			body: JSON.stringify({ email, password }),
-		});
-		const data = await res.json();
-		console.log(data);
-	}
+		try {
+			const res = await fetch('/api/login', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ username, password })
+			});
+			const data = (await res.json()) as LoginResponse;
+			if (data?.token) {
+				await goto(resolve('/(dashboard)/claim-list'));
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
 </script>
 
 <form class="w-full max-w-120" onsubmit={handleLogin}>
-	<h1 class="text-2xl font-bold text-center my-10">Teamwork Claim Form Sign In</h1>
+	<h1 class="my-10 text-center text-2xl font-bold">Teamwork Claim Form Sign In</h1>
 	<div class="flex flex-col gap-6">
 		<div class="flex flex-col gap-2">
-			<label class="text-[15px] font-medium text-[#3d4c5f]" for="email">Email</label>
+			<label class="text-[15px] font-medium text-[#3d4c5f]" for="username">Username</label>
 			<input
-				id="email"
-				name="email"
-				type="email"
-				autocomplete="email"
+				id="username"
+				name="username"
+				type="text"
+				autocomplete="username"
 				required
-				placeholder="Enter your email"
-				bind:value={email}
+				placeholder="Enter your username"
+				bind:value={username}
 				class="h-14 w-full rounded-2xl border border-[#d5dde8] bg-white px-4 text-[15px] text-[#243041] shadow-[0_1px_2px_rgba(16,24,40,0.05)] outline-none placeholder:text-[#9aa3b2] focus:border-[#3b6cff] focus:shadow-[0_0_0_3px_rgba(59,108,255,0.16)]"
 			/>
 		</div>

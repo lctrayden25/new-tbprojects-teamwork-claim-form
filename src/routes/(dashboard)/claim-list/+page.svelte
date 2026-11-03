@@ -45,7 +45,7 @@
 	</header>
 
 	<div class="overflow-x-auto rounded-lg border border-[#e5e7eb] bg-white">
-		<table class="w-full min-w-[760px] border-collapse text-left text-sm">
+		<table class="w-full min-w-190 border-collapse text-left text-sm">
 			<thead class="border-b border-[#e5e7eb] text-[#6b7280]">
 				<tr>
 					<th class="px-4 py-3 font-medium">Claim</th>
