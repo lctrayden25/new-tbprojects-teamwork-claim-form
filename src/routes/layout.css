@@ -36,15 +36,23 @@
 	}
 
 	.btn {
-		@apply inline-flex h-10 w-fit items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60;
+		@apply inline-flex h-10 w-fit items-center justify-center gap-2 rounded-lg border px-4 text-sm font-medium shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60;
 	}
 
 	.btn-primary {
-		@apply bg-brand text-white hover:bg-brand-hover active:bg-brand-active;
+		@apply border-[#c7d7fe] bg-brand-soft text-brand hover:border-[#a5b8fc] hover:bg-[#e0e9ff] active:bg-[#d4e0ff];
 	}
 
 	.btn-secondary {
-		@apply border border-field bg-white text-body shadow-[0_1px_2px_rgba(16,24,40,0.05)] hover:border-brand hover:bg-brand-soft hover:text-brand;
+		@apply border-line bg-white text-body hover:border-field hover:bg-canvas active:bg-[#e5e7eb];
+	}
+
+	.btn-approve {
+		@apply border-[#bbf7d0] bg-[#f0fdf4] text-[#166534] hover:border-[#86efac] hover:bg-[#dcfce7] active:bg-[#bbf7d0];
+	}
+
+	.btn-reject {
+		@apply border-[#fecaca] bg-[#fef2f2] text-[#b91c1c] hover:border-[#fca5a5] hover:bg-[#fee2e2] active:bg-[#fecaca];
 	}
 
 	.control {

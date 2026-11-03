@@ -1,7 +1,8 @@
 import { Claim } from '#lib/server/models/claims.ts';
 import { ClaimStatus } from '#lib/constants.ts';
-import type { PageServerLoad } from './$types';
 import { User } from '#lib/server/models/users.ts';
+import { fail } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load = (async ({ locals }) => {
 	const userId = locals.user?.id;
@@ -32,3 +33,32 @@ export const load = (async ({ locals }) => {
 		}))
 	};
 }) satisfies PageServerLoad;
+
+async function updateClaimStatus(
+	userId: string | undefined,
+	request: Request,
+	status: ClaimStatus.APPROVED | ClaimStatus.REJECTED
+) {
+	if (!userId) return fail(401, { error: 'You have to login to update a claim' });
+
+	const id = String((await request.formData()).get('id') ?? '');
+	if (!id) return fail(400, { error: 'Missing claim' });
+
+	const now = new Date();
+	const update =
+		status === ClaimStatus.APPROVED
+			? { status, approvedAt: now, updatedBy: userId }
+			: { status, rejectedAt: now, updatedBy: userId };
+
+	const result = await Claim.updateOne({ _id: id }, update);
+	if (result.matchedCount === 0) return fail(404, { error: 'Claim not found' });
+
+	return { success: true };
+}
+
+export const actions = {
+	approve: async ({ request, locals }) =>
+		updateClaimStatus(locals.user?.id, request, ClaimStatus.APPROVED),
+	reject: async ({ request, locals }) =>
+		updateClaimStatus(locals.user?.id, request, ClaimStatus.REJECTED)
+} satisfies Actions;

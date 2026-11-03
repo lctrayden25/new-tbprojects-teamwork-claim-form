@@ -4,11 +4,13 @@
 	let {
 		open = $bindable(false),
 		title,
+		titleId = 'modal-title',
 		children,
 		footer
 	}: {
 		open?: boolean;
 		title: string;
+		titleId?: string;
 		children: Snippet;
 		footer?: Snippet;
 	} = $props();
@@ -32,12 +34,12 @@
 
 <dialog
 	bind:this={dialog}
-	aria-labelledby="modal-title"
+	aria-labelledby={titleId}
 	class="m-auto w-[calc(100%-3rem)] max-w-md rounded-lg border border-line bg-white p-6 text-ink shadow-[0_8px_24px_rgba(16,24,40,0.12)] backdrop:bg-ink/40"
 	onclose={onClose}
 	onclick={onBackdropClick}
 >
-	<h2 id="modal-title" class="page-title">{title}</h2>
+	<h2 id={titleId} class="page-title">{title}</h2>
 	<div class="mt-4 text-sm text-body">
 		{@render children()}
 	</div>

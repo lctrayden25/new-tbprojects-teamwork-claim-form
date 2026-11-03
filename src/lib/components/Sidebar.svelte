@@ -51,7 +51,7 @@
 	</nav>
 
 	<div class="border-t border-line px-4 py-4 md:mt-auto">
-		<button type="button" class="btn btn-secondary w-full" disabled={loggingOut} onclick={logout}>
+		<button type="button" class="btn btn-reject w-full" disabled={loggingOut} onclick={logout}>
 			<svg
 				viewBox="0 0 24 24"
 				fill="none"
