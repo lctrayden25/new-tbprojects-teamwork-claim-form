@@ -16,6 +16,12 @@
 	--color-danger: #dc2626;
 }
 
+@layer base {
+	button {
+		@apply hover:cursor-pointer disabled:cursor-not-allowed;
+	}
+}
+
 @layer components {
 	.page {
 		@apply mx-auto flex w-full max-w-6xl flex-col gap-6;
@@ -30,7 +36,7 @@
 	}
 
 	.btn {
-		@apply inline-flex h-10 w-fit items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+		@apply inline-flex h-10 w-fit items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60;
 	}
 
 	.btn-primary {
