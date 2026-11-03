@@ -37,7 +37,7 @@
 			<p class="mt-1 text-sm text-[#6b7280]">{data.claims.length} claims</p>
 		</div>
 		<a
-			href={resolve('/(dashboard)/claim-form/create')}
+			href={resolve('/(dashboard)/claim-list/create')}
 			class="inline-flex h-9 items-center rounded bg-[#3b6cff] px-4 text-sm font-medium text-white hover:bg-[#2f5ef0]"
 		>
 			New claim
