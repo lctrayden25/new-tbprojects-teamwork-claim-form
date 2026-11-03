@@ -1,14 +1,9 @@
 import mongoose from 'mongoose';
-
-export enum ClaimStatus {
-    PENDING = "pending",
-    APPROVED = "approved",
-    REJECTED = "rejected"
-}
+import { ClaimStatus } from '#lib/constants.ts';
 
 const claimSchema = new mongoose.Schema({
     expenseItem: { type: String, required: true },
-    exposeDate: { type: Date, required: true },
+    expenseDate: { type: Date, required: true },
     totalAmount: { type: Number, required: true },
     remarks: { type: String, required: false, default: '' },
     remarksForApprover: { type: String, required: false, default: '' },
@@ -25,7 +20,9 @@ const claimSchema = new mongoose.Schema({
     approvedAt: { type: Date, required: false, default: null },
     rejectedAt: { type: Date, required: false, default: null },
 }, {
-    timestamps: true,
+    timestamps: {
+        createdAt: 'createdAt',
+    },
     version: false
 });
 

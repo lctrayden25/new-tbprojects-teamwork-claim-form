@@ -2,15 +2,14 @@
 	import type { PageProps } from './$types';
 
 	let { form }: PageProps = $props();
-
-	const maxReceiptBytes = 1024 * 1024 * 1024;
-	const today = new Date().toISOString().slice(0, 10);
-
 	let fileInput = $state<HTMLInputElement | null>(null);
 	let dragging = $state(false);
 	let receiptName = $state('');
 	let previewUrl = $state('');
 	let receiptError = $state('');
+
+	const maxReceiptBytes = 1024 * 1024 * 1024;
+	const today = new Date().toISOString().slice(0, 10);
 
 	function setReceipt(file: File | undefined) {
 		if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -57,7 +56,7 @@
 	<title>Expense Claim Form (A1)</title>
 </svelte:head>
 
-<form class="page" method="POST" enctype="multipart/form-data">
+<form class="page" method="POST" enctype="multipart/form-data" action="?/create">
 	<header>
 		<h1 class="page-title">Expense Claim Form (A1)</h1>
 	</header>
@@ -66,7 +65,7 @@
 
 	{#if form?.success}
 		<p class="rounded-lg border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-3 text-sm text-[#166534]">
-			Claim submitted{form.expenseItem ? ` for ${form.expenseItem}` : ''}.
+			Claim submitted{form.data?.expenseItem ? ` for ${form.data.expenseItem}` : ''}.
 		</p>
 	{/if}
 
@@ -74,7 +73,7 @@
 		<span class="label">
 			<span class="text-danger">*</span> Expense Item (e.g. Transportation, Taxi, Medical Expenses)
 		</span>
-		<input name="expenseItem" required value={form?.expenseItem ?? ''} class="control" />
+		<input name="expenseItem" required value={form?.data?.expenseItem ?? ''} class="control" />
 	</label>
 
 	<hr class="border-line" />
@@ -85,7 +84,7 @@
 			name="expenseDate"
 			type="date"
 			required
-			value={form?.expenseDate || today}
+			value={form?.data?.expenseDate || today}
 			class="control control-auto"
 		/>
 	</label>
@@ -98,7 +97,7 @@
 			min="0"
 			step="0.01"
 			required
-			value={form?.totalAmount ?? ''}
+			value={form?.data?.totalAmount ?? ''}
 			class="control"
 		/>
 	</label>
@@ -151,13 +150,13 @@
 
 	<label class="flex flex-col gap-2">
 		<span class="label">Remarks:</span>
-		<textarea name="remarks" rows="3" class="control-area">{form?.remarks ?? ''}</textarea>
+		<textarea name="remarks" rows="3" class="control-area">{form?.data?.remarks ?? ''}</textarea>
 	</label>
 
 	<label class="flex flex-col gap-2">
 		<span class="label">Remarks (For Approver)</span>
 		<textarea name="approverRemarks" rows="3" class="control-area"
-			>{form?.approverRemarks ?? ''}</textarea
+			>{form?.data?.approverRemarks ?? ''}</textarea
 		>
 	</label>
 

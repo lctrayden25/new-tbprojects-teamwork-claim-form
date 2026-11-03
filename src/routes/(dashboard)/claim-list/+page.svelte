@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { ClaimStatus } from '#lib/constants.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	const statusClass = {
-		'Applicant confirm': 'bg-[#f3f4f6] text-[#3d4c5f]',
-		'Waiting for supervisor': 'bg-[#fff7ed] text-[#c2410c]',
-		'Finance review': 'bg-[#eef3ff] text-[#3b6cff]',
-		Paid: 'bg-[#f0fdf4] text-[#166534]'
+		[ClaimStatus.PENDING]: 'bg-[#f3f4f6] text-[#3d4c5f]',
+		[ClaimStatus.APPROVED]: 'bg-[#f0fdf4] text-[#166534]',
+		[ClaimStatus.REJECTED]: 'bg-[#fff7ed] text-[#c2410c]'
 	} as const;
 
 	const amountFormat = new Intl.NumberFormat('en-HK', {
@@ -43,9 +43,9 @@
 		<table class="w-full min-w-190 border-collapse text-left text-sm">
 			<thead class="border-b border-line text-muted">
 				<tr>
-					<th class="px-4 py-3 font-medium">Claim</th>
+					<th class="px-4 py-3 font-medium">Claim ID</th>
 					<th class="px-4 py-3 font-medium">Expense item</th>
-					<th class="px-4 py-3 font-medium">Date</th>
+					<th class="px-4 py-3 font-medium">Expense Date</th>
 					<th class="px-4 py-3 font-medium">Amount</th>
 					<th class="px-4 py-3 font-medium">Receipt</th>
 					<th class="px-4 py-3 font-medium">Status</th>
@@ -63,10 +63,10 @@
 						<td class="px-4 py-3">
 							<span
 								class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium {statusClass[
-									claim.status
+									claim.status as ClaimStatus
 								]}"
 							>
-								{claim.status}
+								{claim.status.charAt(0).toUpperCase() + claim.status.slice(1)}
 							</span>
 						</td>
 						<td class="px-4 py-3 text-subtle">{claim.remarks || '—'}</td>
