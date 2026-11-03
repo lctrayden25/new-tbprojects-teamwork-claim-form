@@ -27,11 +27,11 @@
 	};
 </script>
 
-<form class="w-full max-w-120" onsubmit={handleLogin}>
-	<h1 class="my-10 text-center text-2xl font-bold">Teamwork Claim Form Sign In</h1>
-	<div class="flex flex-col gap-6">
+<form class="flex w-full flex-col gap-6" onsubmit={handleLogin}>
+	<h1 class="page-title text-center">Teamwork Claim Form Sign In</h1>
+	<div class="flex flex-col gap-5">
 		<div class="flex flex-col gap-2">
-			<label class="text-[15px] font-medium text-[#3d4c5f]" for="username">Username</label>
+			<label class="label" for="username">Username</label>
 			<input
 				id="username"
 				name="username"
@@ -40,12 +40,12 @@
 				required
 				placeholder="Enter your username"
 				bind:value={username}
-				class="h-14 w-full rounded-2xl border border-[#d5dde8] bg-white px-4 text-[15px] text-[#243041] shadow-[0_1px_2px_rgba(16,24,40,0.05)] outline-none placeholder:text-[#9aa3b2] focus:border-[#3b6cff] focus:shadow-[0_0_0_3px_rgba(59,108,255,0.16)]"
+				class="control"
 			/>
 		</div>
 
 		<div class="flex flex-col gap-2">
-			<label class="text-[15px] font-medium text-[#3d4c5f]" for="password">Password</label>
+			<label class="label" for="password">Password</label>
 			<div class="relative">
 				<input
 					id="password"
@@ -55,11 +55,11 @@
 					required
 					placeholder="Enter your password"
 					bind:value={password}
-					class="h-14 w-full rounded-2xl border border-[#d5dde8] bg-white px-4 pr-12 text-[15px] text-[#243041] shadow-[0_1px_2px_rgba(16,24,40,0.05)] outline-none placeholder:text-[#9aa3b2] focus:border-[#3b6cff] focus:shadow-[0_0_0_3px_rgba(59,108,255,0.16)]"
+					class="control control-icon"
 				/>
 				<button
 					type="button"
-					class="absolute top-1/2 right-4 -translate-y-1/2 text-[#8b97a6] hover:text-[#5d6b7c]"
+					class="absolute top-1/2 right-3 -translate-y-1/2 rounded-lg p-1 text-muted hover:text-body"
 					aria-label={showPassword ? 'Hide password' : 'Show password'}
 					aria-pressed={showPassword}
 					onclick={() => (showPassword = !showPassword)}
@@ -106,10 +106,5 @@
 		</div>
 	</div>
 
-	<button
-		type="submit"
-		class="mt-4 h-14 w-full rounded-2xl bg-[#3b6cff] text-base font-semibold text-white shadow-[0_2px_8px_rgba(59,108,255,0.22)] hover:bg-[#2f5ef0] active:bg-[#2854e0]"
-	>
-		Sign in
-	</button>
+	<button type="submit" class="btn btn-primary w-full">Sign in</button>
 </form>

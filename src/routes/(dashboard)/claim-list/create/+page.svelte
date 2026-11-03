@@ -57,50 +57,41 @@
 	<title>Expense Claim Form (A1)</title>
 </svelte:head>
 
-<form
-	class="mx-auto flex w-full max-w-6xl flex-col gap-5"
-	method="POST"
-	enctype="multipart/form-data"
->
-	<header class="flex flex-col gap-3">
-		<h1 class="text-lg font-semibold">Expense Claim Form (A1)</h1>
+<form class="page" method="POST" enctype="multipart/form-data">
+	<header>
+		<h1 class="page-title">Expense Claim Form (A1)</h1>
 	</header>
 
-	<hr class="border-t border-dashed border-[#c5cad3]" />
+	<hr class="border-t border-dashed border-field" />
 
 	{#if form?.success}
-		<p class="rounded-md border border-[#bbf7d0] bg-[#f0fdf4] px-3 py-2 text-sm text-[#166534]">
+		<p class="rounded-lg border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-3 text-sm text-[#166534]">
 			Claim submitted{form.expenseItem ? ` for ${form.expenseItem}` : ''}.
 		</p>
 	{/if}
 
-	<label class="flex flex-col gap-2 text-sm">
-		<span
-			><span class="text-[#dc2626]">*</span> Expense Item (e.g. Transportation, Taxi, Medical Expenses)</span
-		>
-		<input
-			name="expenseItem"
-			required
-			value={form?.expenseItem ?? ''}
-			class="h-9 w-full border border-[#d0d5dd] bg-white px-3 outline-none focus:border-[#3b6cff]"
-		/>
+	<label class="flex flex-col gap-2">
+		<span class="label">
+			<span class="text-danger">*</span> Expense Item (e.g. Transportation, Taxi, Medical Expenses)
+		</span>
+		<input name="expenseItem" required value={form?.expenseItem ?? ''} class="control" />
 	</label>
 
-	<hr class="border-[#e5e7eb]" />
+	<hr class="border-line" />
 
-	<label class="flex flex-col gap-2 text-sm">
-		<span><span class="text-[#dc2626]">*</span> Date of expense:</span>
+	<label class="flex flex-col gap-2">
+		<span class="label"><span class="text-danger">*</span> Date of expense:</span>
 		<input
 			name="expenseDate"
 			type="date"
 			required
 			value={form?.expenseDate || today}
-			class="h-9 w-fit border border-[#d0d5dd] bg-white px-2 outline-none focus:border-[#3b6cff]"
+			class="control control-auto"
 		/>
 	</label>
 
-	<label class="flex flex-col gap-2 text-sm">
-		<span><span class="text-[#dc2626]">*</span> Total Amount - HKD (e.g. 100)</span>
+	<label class="flex flex-col gap-2">
+		<span class="label"><span class="text-danger">*</span> Total Amount - HKD (e.g. 100)</span>
 		<input
 			name="totalAmount"
 			type="number"
@@ -108,18 +99,18 @@
 			step="0.01"
 			required
 			value={form?.totalAmount ?? ''}
-			class="h-9 w-full border border-[#d0d5dd] bg-white px-3 outline-none focus:border-[#3b6cff]"
+			class="control"
 		/>
 	</label>
 
-	<hr class="border-[#e5e7eb]" />
+	<hr class="border-line" />
 
-	<div class="flex flex-col gap-2 text-sm">
-		<span>Original Receipt (Max. 1G)</span>
+	<div class="flex flex-col gap-2">
+		<span class="label">Original Receipt (Max. 1G)</span>
 		<label
-			class="relative flex min-h-128 cursor-pointer items-center justify-center border border-dashed bg-[#f7f7f8] {dragging
-				? 'border-[#3b6cff] bg-[#eef3ff]'
-				: 'border-[#c5cad3]'}"
+			class="relative flex min-h-128 cursor-pointer items-center justify-center rounded-lg border border-dashed bg-canvas {dragging
+				? 'border-brand bg-brand-soft'
+				: 'border-field'}"
 			ondragover={(event) => {
 				event.preventDefault();
 				dragging = true;
@@ -138,7 +129,7 @@
 			{#if previewUrl}
 				<img src={previewUrl} alt="Selected receipt" class="max-h-120 max-w-full object-contain" />
 			{:else}
-				<span class="flex flex-col items-center gap-2 text-[#9ca3af]">
+				<span class="flex flex-col items-center gap-2 text-placeholder">
 					<svg
 						viewBox="0 0 24 24"
 						class="size-5"
@@ -154,34 +145,21 @@
 			{/if}
 		</label>
 		{#if receiptError}
-			<p class="text-sm text-[#dc2626]">{receiptError}</p>
+			<p class="text-sm text-danger">{receiptError}</p>
 		{/if}
 	</div>
 
-	<label class="flex flex-col gap-2 text-sm">
-		<span>Remarks:</span>
-		<textarea
-			name="remarks"
-			rows="3"
-			class="w-full resize-y border border-[#d0d5dd] bg-white px-3 py-2 outline-none focus:border-[#3b6cff]"
-			>{form?.remarks ?? ''}</textarea
-		>
+	<label class="flex flex-col gap-2">
+		<span class="label">Remarks:</span>
+		<textarea name="remarks" rows="3" class="control-area">{form?.remarks ?? ''}</textarea>
 	</label>
 
-	<label class="flex flex-col gap-2 text-sm">
-		<span>Remarks (For Approver)</span>
-		<textarea
-			name="approverRemarks"
-			rows="3"
-			class="w-full resize-y border border-[#d0d5dd] bg-white px-3 py-2 outline-none focus:border-[#3b6cff]"
+	<label class="flex flex-col gap-2">
+		<span class="label">Remarks (For Approver)</span>
+		<textarea name="approverRemarks" rows="3" class="control-area"
 			>{form?.approverRemarks ?? ''}</textarea
 		>
 	</label>
 
-	<button
-		type="submit"
-		class="h-9 w-fit rounded bg-[#3b6cff] px-4 text-sm font-medium text-white hover:bg-[#2f5ef0]"
-	>
-		Continue
-	</button>
+	<button type="submit" class="btn btn-primary w-fit">Continue</button>
 </form>

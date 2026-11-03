@@ -20,8 +20,6 @@ export const POST = async ({ request, cookies }: RequestEvent): Promise<Response
         .select('tbId displayName username')
         .lean();
 
-    console.log({ existingUserMongoose: existingUser })
-
     const isExistingUser = existingUser
         ? {
             tbId: existingUser.tbId,
@@ -39,6 +37,13 @@ export const POST = async ({ request, cookies }: RequestEvent): Promise<Response
     }
 
     cookies.set('teamwork_token', token, {
+        path: '/',
+        httpOnly: false,
+        secure: true,
+        maxAge: 60 * 60 * 24 * 30 // 30 days
+    })
+
+    cookies.set('user_id', existingUser?._id.toString(), {
         path: '/',
         httpOnly: false,
         secure: true,

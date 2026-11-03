@@ -46,6 +46,7 @@
 		"#lib/*": "./src/lib/*"
 	},
 	"dependencies": {
+		"jose": "^6.2.15",
 		"mongoose": "^9.11.4"
 	}
 }

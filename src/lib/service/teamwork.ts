@@ -2,6 +2,7 @@ import type { TeamworkLoginResponse } from '#lib/type/Teamwork.ts';
 import { TEAMWORK_API_URL } from '$app/env/private';
 
 export class TeamworkService {
+
     static async checkLoginMethodAndLogin({
         username,
         password
@@ -12,6 +13,7 @@ export class TeamworkService {
         const checkLoginBody = new URLSearchParams();
         checkLoginBody.append('username', username);
         checkLoginBody.append('suppress_response_codes', 'true');
+
 
         await fetch(`${TEAMWORK_API_URL}/api/login/checkLoginMethod`, {
             headers: {

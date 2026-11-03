@@ -1,1 +1,59 @@
 @import 'tailwindcss';
+
+@theme {
+	--color-brand: #3b6cff;
+	--color-brand-hover: #2f5ef0;
+	--color-brand-active: #2854e0;
+	--color-brand-soft: #eef3ff;
+	--color-ink: #1f2937;
+	--color-body: #3d4c5f;
+	--color-muted: #6b7280;
+	--color-subtle: #4b5563;
+	--color-line: #e5e7eb;
+	--color-field: #d5dde8;
+	--color-canvas: #f3f4f6;
+	--color-placeholder: #9aa3b2;
+	--color-danger: #dc2626;
+}
+
+@layer components {
+	.page {
+		@apply mx-auto flex w-full max-w-6xl flex-col gap-6;
+	}
+
+	.page-title {
+		@apply text-lg font-semibold text-ink;
+	}
+
+	.label {
+		@apply text-sm font-medium text-body;
+	}
+
+	.btn {
+		@apply inline-flex h-10 w-fit items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+	}
+
+	.btn-primary {
+		@apply bg-brand text-white hover:bg-brand-hover active:bg-brand-active;
+	}
+
+	.btn-secondary {
+		@apply border border-field bg-white text-body shadow-[0_1px_2px_rgba(16,24,40,0.05)] hover:border-brand hover:bg-brand-soft hover:text-brand;
+	}
+
+	.control {
+		@apply h-10 w-full rounded-lg border border-field bg-white px-3 text-sm text-ink shadow-[0_1px_2px_rgba(16,24,40,0.05)] outline-none placeholder:text-placeholder focus:border-brand focus:shadow-[0_0_0_3px_rgba(59,108,255,0.16)];
+	}
+
+	.control-area {
+		@apply min-h-24 w-full resize-y rounded-lg border border-field bg-white px-3 py-2 text-sm text-ink shadow-[0_1px_2px_rgba(16,24,40,0.05)] outline-none focus:border-brand focus:shadow-[0_0_0_3px_rgba(59,108,255,0.16)];
+	}
+
+	.control-icon {
+		padding-right: 2.75rem;
+	}
+
+	.control-auto {
+		width: fit-content;
+	}
+}
