@@ -1,32 +1,63 @@
 import { Claim } from '#lib/server/models/claims.ts';
 import { ClaimStatus } from '#lib/constants.ts';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import type { User as UserType } from '#lib/type/User.ts';
 import { UserRole } from '#lib/constants.ts';
 
-export const load = (async ({ locals, request }) => {
-	const url = new URL(request.url);
-	const searchParams = url.searchParams;
-	console.log({ searchParams })
-	// const page = Number(searchParams.get('page') ?? 1);
-	// const limit = Number(searchParams.get('limit') ?? 10);
-	// const skip = (page - 1) * limit;
+const PAGE_SIZES = [10, 20, 50] as const;
+const DEFAULT_PAGE_SIZE = 10;
+
+function parsePositiveInt(value: string | null) {
+	if (value == null || !/^\d+$/.test(value)) return null;
+	const parsed = Number(value);
+	return Number.isSafeInteger(parsed) && parsed >= 1 ? parsed : null;
+}
+
+function isPageSize(value: number): value is (typeof PAGE_SIZES)[number] {
+	return (PAGE_SIZES as readonly number[]).includes(value);
+}
+
+export const load = (async ({ locals, url }) => {
+	const pageParam = url.searchParams.get('page');
+	const limitParam = url.searchParams.get('limit');
+	const parsedPage = parsePositiveInt(pageParam);
+	const parsedLimit = parsePositiveInt(limitParam);
+	const limit = parsedLimit != null && isPageSize(parsedLimit) ? parsedLimit : DEFAULT_PAGE_SIZE;
 
 	const userId = locals.user?.id;
 	const userRole = locals.user?.role;
+	const filter = userId ? (userRole === UserRole.ADMIN ? {} : { submittedBy: userId }) : null;
+	const total = filter ? await Claim.countDocuments(filter) : 0;
+	const totalPages = Math.max(1, Math.ceil(total / limit));
+	const page = Math.min(parsedPage ?? 1, totalPages);
 
-	if (!userId) {
-		return { claims: [] };
+	const pageInvalid = pageParam != null && (parsedPage == null || parsedPage !== page);
+	const limitInvalid = limitParam != null && (parsedLimit == null || !isPageSize(parsedLimit));
+	if (pageInvalid || limitInvalid) {
+		const params = new URLSearchParams(url.searchParams);
+		if (page <= 1) params.delete('page');
+		else params.set('page', String(page));
+		if (limit === DEFAULT_PAGE_SIZE) params.delete('limit');
+		else params.set('limit', String(limit));
+		const query = params.toString();
+		redirect(307, query ? `${url.pathname}?${query}` : url.pathname);
 	}
 
-	const claims = await Claim.find(userRole === UserRole.ADMIN ? {} : { submittedBy: userId })
-		.sort({ updatedAt: -1 })
-		.select('_id expenseItem expenseDate totalAmount remarks status receiptImages submittedBy updatedBy')
-		.populate("submittedBy", "displayName")
-		.populate("updatedBy", "displayName")
-		.lean();
+	if (!filter) {
+		return { claims: [], page, limit, total, totalPages };
+	}
 
+	const claims = await Claim.find(filter)
+		.sort({ updatedAt: -1 })
+		.skip((page - 1) * limit)
+		.limit(limit)
+		.select(
+			'_id expenseItem expenseDate totalAmount remarks status receiptImages submittedBy updatedBy'
+		)
+		.populate('submittedBy', 'displayName')
+		.populate('updatedBy', 'displayName')
+		.lean();
 
 	return {
 		claims: claims.map((claim) => ({
@@ -43,7 +74,11 @@ export const load = (async ({ locals, request }) => {
 			submittedBy: String(claim.submittedBy?.displayName ?? ''),
 			updatedBy: String(claim.updatedBy?.displayName ?? ''),
 			updatedAt: claim.updatedAt ? new Date(claim.updatedAt).toISOString().slice(0, 10) : null
-		}))
+		})),
+		page,
+		limit,
+		total,
+		totalPages
 	};
 }) satisfies PageServerLoad;
 
@@ -52,11 +87,11 @@ async function updateClaimStatus(
 	request: Request,
 	status: ClaimStatus.APPROVED | ClaimStatus.REJECTED
 ) {
-
 	const userId = user.id;
-	const userRole = user.role
+	const userRole = user.role;
 
-	if (userRole !== UserRole.ADMIN) return fail(401, { error: 'You are not authorized to update a claim' });
+	if (userRole !== UserRole.ADMIN)
+		return fail(401, { error: 'You are not authorized to update a claim' });
 
 	if (!userId) return fail(401, { error: 'You have to login to update a claim' });
 
