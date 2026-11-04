@@ -1,21 +1,15 @@
 import { Claim } from '#lib/server/models/claims.ts';
 import { ClaimStatus } from '#lib/constants.ts';
+import { DEFAULT_PAGE_SIZE, isPageSize } from '#lib/pagination.ts';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import type { User as UserType } from '#lib/type/User.ts';
 import { UserRole } from '#lib/constants.ts';
 
-const PAGE_SIZES = [10, 20, 50] as const;
-const DEFAULT_PAGE_SIZE = 10;
-
 function parsePositiveInt(value: string | null) {
 	if (value == null || !/^\d+$/.test(value)) return null;
 	const parsed = Number(value);
 	return Number.isSafeInteger(parsed) && parsed >= 1 ? parsed : null;
-}
-
-function isPageSize(value: number): value is (typeof PAGE_SIZES)[number] {
-	return (PAGE_SIZES as readonly number[]).includes(value);
 }
 
 export const load = (async ({ locals, url }) => {

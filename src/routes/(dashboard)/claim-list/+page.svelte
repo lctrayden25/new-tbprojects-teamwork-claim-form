@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { ClaimStatus, UserRole } from '#lib/constants.ts';
 	import Modal from '#lib/components/Modal.svelte';
+	import PaginatedTable from '#lib/components/PaginatedTable.svelte';
 	import type { PageProps } from './$types';
 	import { amountFormat, dateFormat } from '#lib';
 	import { authStore } from '#lib/store/auth.svelte.ts';
@@ -61,43 +61,13 @@
 	} as const;
 
 	const role = $derived(authStore.user?.role);
-	const rangeStart = $derived(data.total === 0 ? 0 : (data.page - 1) * data.limit + 1);
-	const rangeEnd = $derived(Math.min(data.page * data.limit, data.total));
-	const pages = $derived(pageItems(data.page, data.totalPages));
-
-	function pageHref(page: number, limit: number = data.limit) {
-		const params = new URLSearchParams({
-			page: String(page),
-			limit: String(limit)
-		});
-		return resolve(`/(dashboard)/claim-list?${params.toString()}`);
-	}
-
-	function pageItems(current: number, totalPages: number) {
-		if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
-
-		const items: Array<number | 'gap'> = [1];
-		const start = Math.max(2, current - 1);
-		const end = Math.min(totalPages - 1, current + 1);
-		if (start > 2) items.push('gap');
-		for (let page = start; page <= end; page += 1) items.push(page);
-		if (end < totalPages - 1) items.push('gap');
-		items.push(totalPages);
-		return items;
-	}
-
-	function onLimitChange(event: Event) {
-		const nextLimit = Number((event.currentTarget as HTMLSelectElement).value);
-		menuClaim = null;
-		goto(pageHref(1, nextLimit), { reset: false });
-	}
 </script>
 
 <svelte:head>
 	<title>Claim List</title>
 </svelte:head>
 
-<section class="page">
+<section>
 	<header class="flex flex-wrap items-center justify-between gap-4">
 		<div>
 			<h1 class="page-title">Claim List</h1>
@@ -106,113 +76,65 @@
 		<a href={resolve('/(dashboard)/claim-list/create')} class="btn btn-primary">New claim</a>
 	</header>
 
-	<div class="rounded-lg border border-line bg-white">
-		<div class="overflow-x-auto">
-			<table class="w-full min-w-190 border-collapse text-left text-sm">
-				<thead class="border-b border-line text-muted">
-					<tr>
-						<th class="px-4 py-3 font-medium">Claim ID</th>
-						<th class="px-4 py-3 font-medium">Expense item</th>
-						<th class="px-4 py-3 font-medium">Expense Date</th>
-						<th class="px-4 py-3 font-medium">Amount</th>
-						<th class="px-4 py-3 font-medium">Receipt</th>
-						<th class="px-4 py-3 font-medium">Status</th>
-						<th class="px-4 py-3 font-medium">Submitted By</th>
-						<th class="px-4 py-3 font-medium">Remarks</th>
-						<th class="px-4 py-3 font-medium">Action</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each data.claims as claim (claim.id)}
-						<tr class="border-b border-canvas last:border-b-0">
-							<td class="px-4 py-3 font-medium whitespace-nowrap text-ink">{claim.id}</td>
-							<td class="px-4 py-3">{claim.expenseItem}</td>
-							<td class="px-4 py-3 whitespace-nowrap">{dateFormat(claim.expenseDate)}</td>
-							<td class="px-4 py-3 whitespace-nowrap">{amountFormat(claim.totalAmount)}</td>
-							<td class="px-4 py-3 text-subtle">{claim.receiptName || '—'}</td>
-							<td class="px-4 py-3">
-								<span
-									class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium {statusClass[
-										claim.status as ClaimStatus
-									]}"
-								>
-									{claim.status.charAt(0).toUpperCase() + claim.status.slice(1)}
-								</span>
-							</td>
-							<td class="px-4 py-3 text-subtle">{claim.submittedBy || '—'}</td>
-							<td class="px-4 py-3 text-subtle">{claim.remarks || '—'}</td>
-							<td class="px-4 py-3">
-								<button
-									type="button"
-									class="btn btn-secondary relative {menuClaim?.id === claim.id ? 'z-20' : ''}"
-									aria-haspopup="menu"
-									aria-expanded={menuClaim?.id === claim.id}
-									onclick={(event) => toggleMenu(event, claim)}
-								>
-									Action
-								</button>
-							</td>
-						</tr>
-					{:else}
-						<tr>
-							<td class="px-4 py-10 text-center text-muted" colspan="9">No claims yet.</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-
-		<nav
-			class="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3"
-			aria-label="Claim pages"
-		>
-			<p class="text-sm text-muted">
-				{#if data.total === 0}
-					No claims
-				{:else}
-					Showing {rangeStart}–{rangeEnd} of {data.total}
-				{/if}
-			</p>
-			<div class="flex flex-wrap items-center gap-2">
-				<label class="flex items-center gap-2 text-sm text-muted">
-					Rows
-					<select class="control control-auto" value={data.limit} onchange={onLimitChange}>
-						<option value={10}>10</option>
-						<option value={20}>20</option>
-						<option value={50}>50</option>
-					</select>
-				</label>
-				{#if data.page > 1}
-					<a href={pageHref(data.page - 1)} class="btn btn-secondary" data-sveltekit-reset="false"
-						>Previous</a
-					>
-				{:else}
-					<button type="button" class="btn btn-secondary" disabled>Previous</button>
-				{/if}
-				{#each pages as item, index (`${item}-${index}`)}
-					{#if item === 'gap'}
-						<span class="px-1 text-muted" aria-hidden="true">…</span>
-					{:else}
-						<a
-							href={pageHref(item)}
-							class="btn min-w-10 px-3 {item === data.page ? 'btn-primary' : 'btn-secondary'}"
-							aria-current={item === data.page ? 'page' : undefined}
-							data-sveltekit-reset="false"
+	<PaginatedTable
+		page={data.page}
+		limit={data.limit}
+		total={data.total}
+		totalPages={data.totalPages}
+		itemLabel="claims"
+		onNavigate={() => (menuClaim = null)}
+	>
+		{#snippet header()}
+			<tr>
+				<th class="px-4 py-3 font-medium">Claim ID</th>
+				<th class="px-4 py-3 font-medium">Expense item</th>
+				<th class="px-4 py-3 font-medium">Expense Date</th>
+				<th class="px-4 py-3 font-medium">Amount</th>
+				<th class="px-4 py-3 font-medium">Receipt</th>
+				<th class="px-4 py-3 font-medium">Status</th>
+				<th class="px-4 py-3 font-medium">Submitted By</th>
+				<th class="px-4 py-3 font-medium">Remarks</th>
+				<th class="px-4 py-3 font-medium">Action</th>
+			</tr>
+		{/snippet}
+		{#snippet body()}
+			{#each data.claims as claim (claim.id)}
+				<tr class="border-b border-canvas last:border-b-0">
+					<td class="px-4 py-3 font-medium whitespace-nowrap text-ink">{claim.id}</td>
+					<td class="px-4 py-3">{claim.expenseItem}</td>
+					<td class="px-4 py-3 whitespace-nowrap">{dateFormat(claim.expenseDate)}</td>
+					<td class="px-4 py-3 whitespace-nowrap">{amountFormat(claim.totalAmount)}</td>
+					<td class="px-4 py-3 text-subtle">{claim.receiptName || '—'}</td>
+					<td class="px-4 py-3">
+						<span
+							class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium {statusClass[
+								claim.status as ClaimStatus
+							]}"
 						>
-							{item}
-						</a>
-					{/if}
-				{/each}
-				{#if data.page < data.totalPages}
-					<a href={pageHref(data.page + 1)} class="btn btn-secondary" data-sveltekit-reset="false"
-						>Next</a
-					>
-				{:else}
-					<button type="button" class="btn btn-secondary" disabled>Next</button>
-				{/if}
-			</div>
-		</nav>
-	</div>
+							{claim.status.charAt(0).toUpperCase() + claim.status.slice(1)}
+						</span>
+					</td>
+					<td class="px-4 py-3 text-subtle">{claim.submittedBy || '—'}</td>
+					<td class="px-4 py-3 text-subtle">{claim.remarks || '—'}</td>
+					<td class="px-4 py-3">
+						<button
+							type="button"
+							class="btn btn-secondary relative {menuClaim?.id === claim.id ? 'z-20' : ''}"
+							aria-haspopup="menu"
+							aria-expanded={menuClaim?.id === claim.id}
+							onclick={(event) => toggleMenu(event, claim)}
+						>
+							Action
+						</button>
+					</td>
+				</tr>
+			{:else}
+				<tr>
+					<td class="px-4 py-10 text-center text-muted" colspan="9">No claims yet.</td>
+				</tr>
+			{/each}
+		{/snippet}
+	</PaginatedTable>
 
 	{#if menuClaim}
 		<button
