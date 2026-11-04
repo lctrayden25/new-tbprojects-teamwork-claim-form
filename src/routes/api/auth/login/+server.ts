@@ -1,3 +1,4 @@
+import type { UserRole } from '#lib/constants.ts';
 import { connectDB } from '#lib/server/db.ts';
 import { User } from '#lib/server/models/users.ts';
 import { TeamworkService } from '#lib/service/teamwork.ts';
@@ -17,24 +18,16 @@ export const POST = async ({ request, cookies }: RequestEvent): Promise<Response
 
     const { user, token } = data.data;
     const existingUser = await User.findOne({ username: user?.username })
-        .select('tbId displayName username')
+        .select('tbId displayName username role')
         .lean();
 
-    const isExistingUser = existingUser
-        ? {
-            tbId: existingUser.tbId,
-            id: existingUser._id,
-            displayName: existingUser.displayName,
-            username: existingUser.username
-        } : null;
-
-    if (!isExistingUser) {
-        await User.create({
+    const userDoc =
+        existingUser ??
+        (await User.create({
             displayName: user?.displayName,
             username: user?.username,
-            tbId: user?.tbId.toString(),
-        })
-    }
+            tbId: user?.tbId.toString()
+        }));
 
     cookies.set('teamwork_token', token, {
         path: '/',
@@ -43,7 +36,7 @@ export const POST = async ({ request, cookies }: RequestEvent): Promise<Response
         maxAge: 60 * 60 * 24 * 30 // 30 days
     })
 
-    cookies.set('user_id', existingUser?._id.toString(), {
+    cookies.set('user_id', userDoc._id.toString(), {
         path: '/',
         httpOnly: false,
         secure: true,
@@ -54,13 +47,14 @@ export const POST = async ({ request, cookies }: RequestEvent): Promise<Response
     const res = {
         token,
         user: {
+            id: userDoc._id.toString(),
             displayName: user?.displayName,
             username: user?.username,
             profilePic: user?.profilePic,
             tbId: user?.tbId.toString(),
+            role: userDoc?.role as UserRole
         },
-        id: existingUser?._id,
-    } satisfies LoginResponse;
+    } as LoginResponse;
 
     return new Response(JSON.stringify(res), { status: 200 });
 };

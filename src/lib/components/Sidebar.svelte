@@ -4,6 +4,8 @@
 	import { page } from '$app/state';
 	import type { RouteId } from '$app/types';
 
+	import { authStore } from '#lib/store/auth.svelte.ts';
+
 	const items: { href: RouteId; label: string }[] = [
 		{ href: '/(dashboard)/claim-list', label: 'Claim List' },
 		{ href: '/(dashboard)/admin', label: 'Admin' }
@@ -19,13 +21,17 @@
 		if (loggingOut) return;
 		loggingOut = true;
 		try {
-			await fetch('/api/auth/logout', { method: 'POST' });
+			await authStore.logout();
 			await goto(resolve('/'));
 		} catch (error) {
 			console.error(error);
 			loggingOut = false;
 		}
 	}
+
+	const displayName = $derived(authStore?.user?.displayName ?? '');
+	const username = $derived(authStore?.user?.username ?? '');
+	const tbId = $derived(authStore?.user?.tbId ?? '');
 </script>
 
 <aside
@@ -50,25 +56,31 @@
 		{/each}
 	</nav>
 
-	<div class="border-t border-line px-4 py-4 md:mt-auto">
-		<button type="button" class="btn btn-reject w-full" disabled={loggingOut} onclick={logout}>
-			<svg
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.8"
-				class="size-4"
-				aria-hidden="true"
-			>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15"
-				/>
-				<path stroke-linecap="round" stroke-linejoin="round" d="M18 15l3-3-3-3" />
-				<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h12" />
-			</svg>
-			{loggingOut ? 'Logging out…' : 'Log out'}
-		</button>
+	<div class="flex flex-col border-t border-line px-4 py-4 md:mt-auto">
+		<div class="mb-4 flex flex-col gap-1">
+			<span class="text-md text-muted">{`${displayName} ${tbId ? `(${tbId})` : ''}`}</span>
+			<span class="text-md text-muted">{username}</span>
+		</div>
+		<div class="">
+			<button type="button" class="btn btn-reject w-full" disabled={loggingOut} onclick={logout}>
+				<svg
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.8"
+					class="size-4"
+					aria-hidden="true"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15"
+					/>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M18 15l3-3-3-3" />
+					<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h12" />
+				</svg>
+				{loggingOut ? 'Logging out…' : 'Log out'}
+			</button>
+		</div>
 	</div>
 </aside>

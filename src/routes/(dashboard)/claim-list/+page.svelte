@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { ClaimStatus } from '#lib/constants.ts';
+	import { ClaimStatus, UserRole } from '#lib/constants.ts';
 	import Modal from '#lib/components/Modal.svelte';
 	import type { PageProps } from './$types';
 	import { amountFormat, dateFormat } from '#lib';
+	import { authStore } from '#lib/store/auth.svelte.ts';
 
 	let { data }: PageProps = $props();
 	let detailOpen = $state(false);
@@ -56,6 +57,8 @@
 		[ClaimStatus.APPROVED]: 'bg-[#f0fdf4] text-[#166534]',
 		[ClaimStatus.REJECTED]: 'bg-[#fff7ed] text-[#c2410c]'
 	} as const;
+
+	const { role } = authStore.user ?? {};
 </script>
 
 <svelte:head>
@@ -141,22 +144,25 @@
 			<button type="button" class="btn btn-secondary w-full" role="menuitem" onclick={showDetail}>
 				Detail
 			</button>
-			<button
-				type="button"
-				class="btn btn-approve w-full"
-				role="menuitem"
-				onclick={() => askConfirm('approve')}
-			>
-				Approve
-			</button>
-			<button
-				type="button"
-				class="btn btn-reject w-full"
-				role="menuitem"
-				onclick={() => askConfirm('reject')}
-			>
-				Reject
-			</button>
+
+			{#if role === UserRole.ADMIN}
+				<button
+					type="button"
+					class="btn btn-approve w-full"
+					role="menuitem"
+					onclick={() => askConfirm('approve')}
+				>
+					Approve
+				</button>
+				<button
+					type="button"
+					class="btn btn-reject w-full"
+					role="menuitem"
+					onclick={() => askConfirm('reject')}
+				>
+					Reject
+				</button>
+			{/if}
 		</div>
 	{/if}
 

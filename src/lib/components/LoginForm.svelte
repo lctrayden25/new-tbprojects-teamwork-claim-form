@@ -19,7 +19,7 @@
 			});
 			const data = (await res.json()) as LoginResponse;
 			if (data?.token) {
-				await goto(resolve('/(dashboard)/claim-list'));
+				await goto(resolve('/(dashboard)/claim-list'), { invalidateAll: true });
 			}
 		} catch (error) {
 			console.log(error);
