@@ -59,7 +59,7 @@
 		[ClaimStatus.REJECTED]: 'bg-[#fff7ed] text-[#c2410c]'
 	} as const;
 
-	const { role } = authStore.user ?? {};
+	const role = $derived(authStore.user?.role);
 </script>
 
 <svelte:head>
@@ -146,7 +146,7 @@
 				Detail
 			</button>
 
-			{#if role === UserRole.ADMIN}
+			{#if role === UserRole.ADMIN && menuClaim?.status === ClaimStatus.PENDING}
 				<button
 					type="button"
 					class="btn btn-approve w-full"

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { amountFormat } from '#lib';
 	import Modal from '#lib/components/Modal.svelte';
+	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
 	let { form }: PageProps = $props();
@@ -100,6 +101,25 @@
 	enctype="multipart/form-data"
 	action="?/create"
 	onsubmit={onSubmit}
+	use:enhance={({ cancel }) => {
+		if (!confirmed) {
+			cancel();
+			return;
+		}
+
+		return async ({ result, update }) => {
+			await update({ refreshAll: true });
+			if (result.type === 'success') {
+				confirmOpen = false;
+				submitting = false;
+				formEl?.reset();
+				alert('Claim submitted successfully');
+			} else {
+				console.log(result);
+				alert((result as { data?: { error: string } }).data?.error || 'An error occurred');
+			}
+		};
+	}}
 >
 	<header>
 		<h1 class="page-title">Expense Claim Form (A1)</h1>

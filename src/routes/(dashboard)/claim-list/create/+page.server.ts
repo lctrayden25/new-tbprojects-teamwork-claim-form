@@ -41,6 +41,7 @@ export const actions: Actions = {
             status: claim.status,
             submittedBy: claim.submittedBy.toString(),
             receiptImages: claim.receiptImages ?? [],
+            updatedBy: null,
         };
 
         return { success: true, data: claimResult };

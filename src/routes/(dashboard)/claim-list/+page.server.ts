@@ -1,23 +1,32 @@
 import { Claim } from '#lib/server/models/claims.ts';
 import { ClaimStatus } from '#lib/constants.ts';
-import { User } from '#lib/server/models/users.ts';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import type { User as UserType } from '#lib/type/User.ts';
 import { UserRole } from '#lib/constants.ts';
 
-export const load = (async ({ locals }) => {
+export const load = (async ({ locals, request }) => {
+	const url = new URL(request.url);
+	const searchParams = url.searchParams;
+	console.log({ searchParams })
+	// const page = Number(searchParams.get('page') ?? 1);
+	// const limit = Number(searchParams.get('limit') ?? 10);
+	// const skip = (page - 1) * limit;
+
 	const userId = locals.user?.id;
+	const userRole = locals.user?.role;
 
 	if (!userId) {
 		return { claims: [] };
 	}
 
-	const claims = await Claim.find({ submittedBy: userId })
-		.select('_id expenseItem expenseDate totalAmount remarks status receiptImages submittedBy')
+	const claims = await Claim.find(userRole === UserRole.ADMIN ? {} : { submittedBy: userId })
+		.sort({ updatedAt: -1 })
+		.select('_id expenseItem expenseDate totalAmount remarks status receiptImages submittedBy updatedBy')
+		.populate("submittedBy", "displayName")
+		.populate("updatedBy", "displayName")
 		.lean();
 
-	const submittedBy = await User.findOne({ _id: userId }).select('displayName').lean();
 
 	return {
 		claims: claims.map((claim) => ({
@@ -31,7 +40,9 @@ export const load = (async ({ locals }) => {
 			receiptName: Array.isArray(claim.receiptImages) ? String(claim.receiptImages[0] ?? '') : '',
 			status: claim.status as ClaimStatus,
 			remarks: String(claim.remarks ?? ''),
-			submittedBy: String(submittedBy?.displayName ?? '')
+			submittedBy: String(claim.submittedBy?.displayName ?? ''),
+			updatedBy: String(claim.updatedBy?.displayName ?? ''),
+			updatedAt: claim.updatedAt ? new Date(claim.updatedAt).toISOString().slice(0, 10) : null
 		}))
 	};
 }) satisfies PageServerLoad;
