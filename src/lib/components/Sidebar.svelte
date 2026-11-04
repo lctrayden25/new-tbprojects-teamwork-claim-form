@@ -19,7 +19,7 @@
 		if (loggingOut) return;
 		loggingOut = true;
 		try {
-			await fetch('/api/logout', { method: 'POST' });
+			await fetch('/api/auth/logout', { method: 'POST' });
 			await goto(resolve('/'));
 		} catch (error) {
 			console.error(error);
