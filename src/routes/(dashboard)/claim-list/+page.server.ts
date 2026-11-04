@@ -3,6 +3,8 @@ import { ClaimStatus } from '#lib/constants.ts';
 import { User } from '#lib/server/models/users.ts';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
+import type { User as UserType } from '#lib/type/User.ts';
+import { UserRole } from '#lib/constants.ts';
 
 export const load = (async ({ locals }) => {
 	const userId = locals.user?.id;
@@ -35,10 +37,16 @@ export const load = (async ({ locals }) => {
 }) satisfies PageServerLoad;
 
 async function updateClaimStatus(
-	userId: string | undefined,
+	user: UserType,
 	request: Request,
 	status: ClaimStatus.APPROVED | ClaimStatus.REJECTED
 ) {
+
+	const userId = user.id;
+	const userRole = user.role
+
+	if (userRole !== UserRole.ADMIN) return fail(401, { error: 'You are not authorized to update a claim' });
+
 	if (!userId) return fail(401, { error: 'You have to login to update a claim' });
 
 	const id = String((await request.formData()).get('id') ?? '');
@@ -58,7 +66,7 @@ async function updateClaimStatus(
 
 export const actions = {
 	approve: async ({ request, locals }) =>
-		updateClaimStatus(locals.user?.id, request, ClaimStatus.APPROVED),
+		updateClaimStatus(locals.user as UserType, request, ClaimStatus.APPROVED),
 	reject: async ({ request, locals }) =>
-		updateClaimStatus(locals.user?.id, request, ClaimStatus.REJECTED)
+		updateClaimStatus(locals.user as UserType, request, ClaimStatus.REJECTED)
 } satisfies Actions;

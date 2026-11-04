@@ -2,13 +2,16 @@
 	import type { LoginResponse } from '#lib/type/Auth.ts';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import Loading from './Loading.svelte';
 
 	let username = $state('');
 	let password = $state('');
 	let showPassword = $state(false);
+	let isLoading = $state<boolean>(false);
 
 	const handleLogin = async (event: SubmitEvent) => {
 		event.preventDefault();
+		isLoading = true;
 		try {
 			const res = await fetch('/api/auth/login', {
 				method: 'POST',
@@ -22,7 +25,10 @@
 				await goto(resolve('/(dashboard)/claim-list'), { invalidateAll: true });
 			}
 		} catch (error) {
+			isLoading = false;
 			console.log(error);
+		} finally {
+			isLoading = false;
 		}
 	};
 </script>
@@ -40,7 +46,8 @@
 				required
 				placeholder="Enter your username"
 				bind:value={username}
-				class="control"
+				class="control {isLoading ? 'opacity-50' : ''}"
+				disabled={isLoading}
 			/>
 		</div>
 
@@ -55,7 +62,8 @@
 					required
 					placeholder="Enter your password"
 					bind:value={password}
-					class="control control-icon"
+					class="control control-icon {isLoading ? 'opacity-50' : ''}"
+					disabled={isLoading}
 				/>
 				<button
 					type="button"
@@ -63,6 +71,7 @@
 					aria-label={showPassword ? 'Hide password' : 'Show password'}
 					aria-pressed={showPassword}
 					onclick={() => (showPassword = !showPassword)}
+					disabled={isLoading}
 				>
 					{#if showPassword}
 						<svg
@@ -106,5 +115,11 @@
 		</div>
 	</div>
 
-	<button type="submit" class="btn btn-primary w-full">Sign in</button>
+	<button type="submit" class="btn btn-primary w-full">
+		{#if isLoading}
+			<Loading />
+		{:else}
+			Sign in
+		{/if}
+	</button>
 </form>

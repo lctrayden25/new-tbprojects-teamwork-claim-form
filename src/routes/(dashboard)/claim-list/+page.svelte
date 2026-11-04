@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import { ClaimStatus, UserRole } from '#lib/constants.ts';
 	import Modal from '#lib/components/Modal.svelte';
@@ -189,7 +190,21 @@
 				Cancel
 			</button>
 			{#if confirmClaim}
-				<form method="POST" action={confirmAction === 'reject' ? '?/reject' : '?/approve'}>
+				<form
+					method="POST"
+					action={confirmAction === 'reject' ? '?/reject' : '?/approve'}
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							await update();
+							if (result.type === 'success') {
+								confirmOpen = false;
+							} else {
+								console.log(result);
+								alert((result as { data?: { error: string } }).data?.error || 'An error occurred');
+							}
+						};
+					}}
+				>
 					<input type="hidden" name="id" value={confirmClaim.id} />
 					<button
 						type="submit"
