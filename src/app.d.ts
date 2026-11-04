@@ -2,16 +2,10 @@
 // for information about these interfaces
 declare global {
 	namespace App {
-		import type { UserRole } from "#lib/constants.ts";
+		import type { User } from "#lib/type/User.ts";
 		// interface Error {}
 		interface Locals {
-			user: {
-				id: string,
-				displayName: string,
-				username: string,
-				tbId: string,
-				role: UserRole
-			} | null;
+			user: User | null;
 		}
 		// interface PageData {}
 		// interface PageState {}
