@@ -4,6 +4,7 @@
 	import type { LayoutProps } from './$types';
 	import { authStore } from '#lib/store/auth.svelte.ts';
 	import type { User } from '#lib/type/User.ts';
+	import { Toaster } from 'svelte-sonner';
 
 	let { children, data }: LayoutProps = $props();
 
@@ -17,5 +18,7 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
+
+<Toaster richColors position="top-right" />
 
 {@render children()}

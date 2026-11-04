@@ -7,6 +7,8 @@
 	import type { PageProps } from './$types';
 	import { amountFormat, dateFormat } from '#lib';
 	import { authStore } from '#lib/store/auth.svelte.ts';
+	import { refreshAll } from '$app/navigation';
+	import { toast } from 'svelte-sonner';
 
 	let { data }: PageProps = $props();
 	let detailOpen = $state(false);
@@ -17,6 +19,8 @@
 	let confirmOpen = $state(false);
 	let confirmAction = $state<'approve' | 'reject' | null>(null);
 	let confirmClaim = $state<(typeof data.claims)[number] | null>(null);
+
+	let remarksForApproverForUpdate = $derived(selected?.remarksForApprover || '');
 
 	function toggleMenu(event: MouseEvent, claim: (typeof data.claims)[number]) {
 		if (menuClaim?.id === claim.id) {
@@ -61,6 +65,19 @@
 	} as const;
 
 	const role = $derived(authStore.user?.role);
+
+	const updateApproverRemark = async () => {
+		if (!selected || !remarksForApproverForUpdate) return;
+		const response = await fetch('/api/claim/update-approver-remark', {
+			method: 'POST',
+			body: JSON.stringify({ id: selected.id, remarksForApprover: remarksForApproverForUpdate })
+		});
+		const data = await response.json();
+		if (data.success) {
+			toast.success('Remarks updated successfully');
+		}
+		refreshAll();
+	};
 </script>
 
 <svelte:head>
@@ -93,7 +110,7 @@
 				<th class="px-4 py-3 font-medium">Receipt</th>
 				<th class="px-4 py-3 font-medium">Status</th>
 				<th class="px-4 py-3 font-medium">Submitted By</th>
-				<th class="px-4 py-3 font-medium">Remarks</th>
+				<!-- <th class="px-4 py-3 font-medium">Remarks</th> -->
 				<th class="px-4 py-3 font-medium">Action</th>
 			</tr>
 		{/snippet}
@@ -115,16 +132,23 @@
 						</span>
 					</td>
 					<td class="px-4 py-3 text-subtle">{claim.submittedBy || '—'}</td>
-					<td class="px-4 py-3 text-subtle">{claim.remarks || '—'}</td>
+					<!-- <td class="px-4 py-3 text-subtle">{claim.remarks || '—'}</td> -->
 					<td class="px-4 py-3">
 						<button
 							type="button"
-							class="btn btn-secondary relative {menuClaim?.id === claim.id ? 'z-20' : ''}"
+							class="btn btn-secondary relative size-10 border-line px-0 {menuClaim?.id === claim.id
+								? 'z-20'
+								: ''}"
+							aria-label="Actions"
 							aria-haspopup="menu"
 							aria-expanded={menuClaim?.id === claim.id}
 							onclick={(event) => toggleMenu(event, claim)}
 						>
-							Action
+							<svg viewBox="0 0 24 24" fill="currentColor" class="size-4" aria-hidden="true">
+								<circle cx="12" cy="5" r="1.6" />
+								<circle cx="12" cy="12" r="1.6" />
+								<circle cx="12" cy="19" r="1.6" />
+							</svg>
 						</button>
 					</td>
 				</tr>
@@ -144,18 +168,23 @@
 			onclick={() => (menuClaim = null)}
 		></button>
 		<div
-			class="fixed z-20 flex w-40 flex-col gap-2 rounded-lg border border-line bg-white p-2 shadow-[0_8px_24px_rgba(16,24,40,0.12)]"
+			class="fixed z-20 flex w-40 flex-col gap-2 rounded-lg bg-white p-2 shadow-[0_8px_24px_rgba(16,24,40,0.12)]"
 			style="top: {menuTop}px; left: {menuLeft}px"
 			role="menu"
 		>
-			<button type="button" class="btn btn-secondary w-full" role="menuitem" onclick={showDetail}>
+			<button
+				type="button"
+				class="flex h-9 w-full items-center rounded-md px-3 text-sm font-medium text-body hover:bg-canvas"
+				role="menuitem"
+				onclick={showDetail}
+			>
 				Detail
 			</button>
 
 			{#if role === UserRole.ADMIN && menuClaim?.status === ClaimStatus.PENDING}
 				<button
 					type="button"
-					class="btn btn-approve w-full"
+					class="flex h-9 w-full items-center rounded-md px-3 text-sm font-medium text-[#166534] hover:bg-[#f0fdf4]"
 					role="menuitem"
 					onclick={() => askConfirm('approve')}
 				>
@@ -163,7 +192,7 @@
 				</button>
 				<button
 					type="button"
-					class="btn btn-reject w-full"
+					class="flex h-9 w-full items-center rounded-md px-3 text-sm font-medium text-[#b91c1c] hover:bg-[#fef2f2]"
 					role="menuitem"
 					onclick={() => askConfirm('reject')}
 				>
@@ -257,13 +286,86 @@
 							<dd class="mt-1 font-medium text-ink">{amountFormat(selected.totalAmount)}</dd>
 						</div>
 						<div class="px-4 py-3">
+							<dt class="text-xs text-muted">Receipt</dt>
+							<dd class="mt-1 font-medium text-ink">
+								{#if selected.receiptImages.length === 0}
+									—
+								{:else}
+									<ul class="flex flex-col gap-2">
+										{#each selected.receiptImages as receipt (receipt)}
+											<li>
+												{#if receipt.startsWith('http') || receipt.startsWith('/')}
+													<img src={receipt} alt="Receipt" class="max-h-48 rounded-md" />
+												{:else}
+													{receipt}
+												{/if}
+											</li>
+										{/each}
+									</ul>
+								{/if}
+							</dd>
+						</div>
+					</div>
+					<div class="grid grid-cols-2 divide-x divide-line border-b border-line">
+						<div class="px-4 py-3">
 							<dt class="text-xs text-muted">Submitted by</dt>
 							<dd class="mt-1 font-medium text-ink">{selected.submittedBy || '—'}</dd>
 						</div>
+						<div class="px-4 py-3">
+							<dt class="text-xs text-muted">Submitted on</dt>
+							<dd class="mt-1 font-medium text-ink">
+								{selected.createdAt ? dateFormat(selected.createdAt) : '—'}
+							</dd>
+						</div>
 					</div>
-					<div class="px-4 py-3">
+					<div class="border-b border-line px-4 py-3">
 						<dt class="text-xs text-muted">Remarks</dt>
 						<dd class="mt-1 text-ink">{selected.remarks || '—'}</dd>
+					</div>
+					<div class="border-b border-line px-4 py-3">
+						<dt class="text-xs text-muted">Remarks for approver</dt>
+						<dd class="mt-1 text-ink">
+							<textarea
+								class="w-full rounded-md border border-line p-2"
+								name="remarksForApprover"
+								bind:value={remarksForApproverForUpdate}
+								onchange={(event: Event) => {
+									remarksForApproverForUpdate = (event.currentTarget as HTMLTextAreaElement).value;
+									console.log({ remarksForApproverForUpdate });
+								}}>{selected.remarksForApprover || ''}</textarea
+							>
+						</dd>
+						<div class="flex justify-end">
+							<button type="button" class="btn btn-primary" onclick={updateApproverRemark}
+								>Update</button
+							>
+						</div>
+					</div>
+					<div class="grid grid-cols-2 divide-x divide-line border-b border-line">
+						<div class="px-4 py-3">
+							<dt class="text-xs text-muted">Updated by</dt>
+							<dd class="mt-1 font-medium text-ink">{selected.updatedBy || '—'}</dd>
+						</div>
+						<div class="px-4 py-3">
+							<dt class="text-xs text-muted">Updated on</dt>
+							<dd class="mt-1 font-medium text-ink">
+								{selected.updatedAt ? dateFormat(selected.updatedAt) : '—'}
+							</dd>
+						</div>
+					</div>
+					<div class="grid grid-cols-2 divide-x divide-line">
+						<div class="px-4 py-3">
+							<dt class="text-xs text-muted">Approved on</dt>
+							<dd class="mt-1 font-medium text-ink">
+								{selected.approvedAt ? dateFormat(selected.approvedAt) : '—'}
+							</dd>
+						</div>
+						<div class="px-4 py-3">
+							<dt class="text-xs text-muted">Rejected on</dt>
+							<dd class="mt-1 font-medium text-ink">
+								{selected.rejectedAt ? dateFormat(selected.rejectedAt) : '—'}
+							</dd>
+						</div>
 					</div>
 				</dl>
 			</div>

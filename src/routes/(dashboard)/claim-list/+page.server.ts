@@ -47,28 +47,38 @@ export const load = (async ({ locals, url }) => {
 		.skip((page - 1) * limit)
 		.limit(limit)
 		.select(
-			'_id expenseItem expenseDate totalAmount remarks status receiptImages submittedBy updatedBy'
+			'_id expenseItem expenseDate totalAmount remarks status receiptImages submittedBy updatedBy approvedAt rejectedAt remarksForApprover createdAt updatedAt'
 		)
 		.populate('submittedBy', 'displayName')
 		.populate('updatedBy', 'displayName')
 		.lean();
 
+
+	const claimsList = claims.map((claim) => ({
+		id: String(claim._id),
+		expenseItem: String(claim.expenseItem),
+		expenseDate:
+			claim.expenseDate instanceof Date
+				? claim.expenseDate.toISOString().slice(0, 10)
+				: String(claim.expenseDate).slice(0, 10),
+		totalAmount: Number(claim.totalAmount),
+		receiptName: Array.isArray(claim.receiptImages) ? String(claim.receiptImages[0] ?? '') : '',
+		receiptImages: Array.isArray(claim.receiptImages)
+			? claim.receiptImages.map((image: unknown) => String(image))
+			: [],
+		status: claim.status as ClaimStatus,
+		remarks: String(claim.remarks ?? ''),
+		remarksForApprover: String(claim.remarksForApprover ?? ''),
+		submittedBy: String(claim.submittedBy?.displayName ?? ''),
+		updatedBy: String(claim.updatedBy?.displayName ?? ''),
+		createdAt: claim.createdAt ? new Date(claim.createdAt).toISOString().slice(0, 10) : null,
+		updatedAt: claim.updatedAt ? new Date(claim.updatedAt).toISOString().slice(0, 10) : null,
+		approvedAt: claim.approvedAt ? new Date(claim.approvedAt).toISOString().slice(0, 10) : null,
+		rejectedAt: claim.rejectedAt ? new Date(claim.rejectedAt).toISOString().slice(0, 10) : null
+	}));
+
 	return {
-		claims: claims.map((claim) => ({
-			id: String(claim._id),
-			expenseItem: String(claim.expenseItem),
-			expenseDate:
-				claim.expenseDate instanceof Date
-					? claim.expenseDate.toISOString().slice(0, 10)
-					: String(claim.expenseDate).slice(0, 10),
-			totalAmount: Number(claim.totalAmount),
-			receiptName: Array.isArray(claim.receiptImages) ? String(claim.receiptImages[0] ?? '') : '',
-			status: claim.status as ClaimStatus,
-			remarks: String(claim.remarks ?? ''),
-			submittedBy: String(claim.submittedBy?.displayName ?? ''),
-			updatedBy: String(claim.updatedBy?.displayName ?? ''),
-			updatedAt: claim.updatedAt ? new Date(claim.updatedAt).toISOString().slice(0, 10) : null
-		})),
+		claims: claimsList,
 		page,
 		limit,
 		total,

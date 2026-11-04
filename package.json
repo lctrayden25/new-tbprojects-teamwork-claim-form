@@ -47,6 +47,7 @@
 	},
 	"dependencies": {
 		"jose": "^6.2.15",
-		"mongoose": "^9.11.4"
+		"mongoose": "^9.11.4",
+		"svelte-sonner": "^1.2.3"
 	}
 }

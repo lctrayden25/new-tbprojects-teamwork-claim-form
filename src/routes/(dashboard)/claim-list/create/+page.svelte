@@ -2,6 +2,7 @@
 	import { amountFormat } from '#lib';
 	import Modal from '#lib/components/Modal.svelte';
 	import { enhance } from '$app/forms';
+	import { toast } from 'svelte-sonner';
 	import type { PageProps } from './$types';
 
 	let { form }: PageProps = $props();
@@ -113,10 +114,10 @@
 				confirmOpen = false;
 				submitting = false;
 				formEl?.reset();
-				alert('Claim submitted successfully');
+				toast.success('Claim submitted successfully');
 			} else {
 				console.log(result);
-				alert((result as { data?: { error: string } }).data?.error || 'An error occurred');
+				toast.error((result as { data?: { error: string } }).data?.error || 'An error occurred');
 			}
 		};
 	}}

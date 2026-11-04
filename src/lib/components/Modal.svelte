@@ -35,7 +35,7 @@
 <dialog
 	bind:this={dialog}
 	aria-labelledby={titleId}
-	class="m-auto w-[calc(100%-3rem)] max-w-md rounded-lg border border-line bg-white p-6 text-ink shadow-[0_8px_24px_rgba(16,24,40,0.12)] backdrop:bg-ink/40"
+	class="m-auto w-[calc(100%-3rem)] max-w-5xl rounded-lg border border-line bg-white p-6 text-ink shadow-[0_8px_24px_rgba(16,24,40,0.12)] backdrop:bg-ink/40"
 	onclose={onClose}
 	onclick={onBackdropClick}
 >

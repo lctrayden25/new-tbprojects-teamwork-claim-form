@@ -19,9 +19,8 @@ class AuthStore {
         }
     }
 
-
     async logout() {
-        await fetch('/api/auth/logout', { method: 'POST' });
+        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
         this.#user = null;
     }
 }
